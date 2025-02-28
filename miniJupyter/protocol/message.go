@@ -1,77 +1,111 @@
 package protocol
 
-import (
-	"time"
-)
+import "time"
 
-// Header 定义消息头
-type Header struct {
-    MsgId    string    `json:"msg_id"`
-    MsgType  string    `json:"msg_type"`
-    Username string    `json:"username"`
-    Session  string    `json:"session"`
-    Date     time.Time `json:"date"`
-    Version  string    `json:"version"`
-}
-
-// Metadata 定义元数据
-type Metadata map[string]interface{}
-
-// Message 定义基础消息结构
+// 基础消息结构
 type Message struct {
-    Header   Header                 `json:"header"`
-    Parent   Header                 `json:"parent_header"`
-    Metadata Metadata              `json:"metadata"`
-    Content  interface{}           `json:"content"`
+    Header        Header                 `json:"header"`
+    ParentHeader  Header                 `json:"parent_header"`
+    Meta          Metadata               `json:"meta"`
+    Content       interface{}            `json:"content"`
+    Security      SecurityConfig         `json:"security"`
+    Trace         *MessageTrace          `json:"trace"`
 }
 
-// 定义不同类型消息的Content结构
-type ExecuteRequest struct {
-    Code         string `json:"code"`
-    Silent       bool   `json:"silent"`
-    StoreHistory bool   `json:"store_history"`
+// Header 定义
+type Header struct {
+    MsgId       string      `json:"msg_id"`
+    SessionId   string      `json:"session_id"`
+    UserId      string      `json:"user_id"`
+    Timestamp   time.Time   `json:"timestamp"`
+    MsgType     string      `json:"msg_type"`
+    Compression Compression `json:"compression"`
+    Encoding    Encoding    `json:"encoding"`
+    Transport   Transport   `json:"transport"`
+    Version     string      `json:"version"`
 }
 
-type ExecuteReply struct {
-    Status        string `json:"status"`
-    ExecutionCount int    `json:"execution_count"`
-    Payload       []interface{} `json:"payload"`
+// Metadata 定义
+type Metadata struct {
+    Priority Priority `json:"priority"`
+    Tags     []string `json:"tags"`
 }
 
-type HeartbeatRequest struct {}
-
-type HeartbeatReply struct {
-    Status string `json:"status"`
+// Security 定义
+type SecurityConfig struct {
+    Token      string `json:"token"`
+    Encryption string `json:"encryption"`
 }
 
-// 创建新消息的辅助函数
-func NewMessage(msgType string, content interface{}) *Message {
-    return &Message{
-        Header: Header{
-            MsgId:    GenerateMessageId(),
-            MsgType:  msgType,
-            Username: "anonymous",
-            Session:  GenerateSessionId(),
-            Date:     time.Now(),
-            Version:  "5.3",
-        },
-        Metadata: make(Metadata),
-        Content:  content,
+// Execute Request Content
+type ExecuteRequestContent struct {
+    CommandId    string                 `json:"command_id"`
+    Service      string                 `json:"service"`
+    Method       string                 `json:"method"`
+    Params       map[string]interface{} `json:"params"`
+    Condition    map[string]interface{} `json:"condition"`
+    Dependency   []string               `json:"dependency"`
+    Timeout      int                    `json:"timeout"`
+    Retry        RetryConfig           `json:"retry"`
+    StopOnError  bool                  `json:"stop_on_error"`
+    AllowedUsers []string              `json:"allowed_users"`
+}
+
+type RetryConfig struct {
+    MaxAttempts int           `json:"max_attempts"`
+    Strategy    RetryStrategy `json:"strategy"`
+}
+
+// Execute Reply Content
+type ExecuteReplyContent struct {
+    Status Status `json:"status"`
+}
+
+// Core Info Reply Content
+type CoreInfoContent struct {
+    Status            Status `json:"status"`
+    CoreStatus        string `json:"core_status"`
+    CoreVersion       string `json:"core_version"`
+    CPUUsage         string `json:"cpu_usage"`
+    MemoryUsage      string `json:"memory_usage"`
+    DiskUsage        string `json:"disk_usage"`
+    NetworkIO        string `json:"network_io"`
+    ActiveConnections int    `json:"active_connections"`
+    RunningTasks      int    `json:"running_tasks"`
+    TaskQueueSize     int    `json:"task_queue_size"`
+}
+
+// Execute Result Content
+type ExecuteResultContent struct {
+    Status Status      `json:"status"`
+    Result interface{} `json:"result"`
+}
+
+// Stream Content
+type StreamContent struct {
+    Type StreamType `json:"type"`
+    Text string     `json:"text"`
+}
+
+// Comm Messages
+type CommOpenContent struct {
+    CommId     string      `json:"comm_id"`
+    TargetName string      `json:"target_name"`
+    Data       interface{} `json:"data"`
+}
+
+type CommMsgContent struct {
+    CommId string      `json:"comm_id"`
+    Data   interface{} `json:"data"`
+}
+
+// Message 的追踪相关方法
+func (m *Message) AddTrace(serviceId, serviceName, hostName string) *MessageHop {
+    // 如果还没有追踪信息，创建一个
+    if m.Trace == nil {
+        m.Trace = NewMessageTrace()
     }
-}
-
-// 根据消息类型获取对应的Content类型
-func GetContentType(msgType string) interface{} {
-    switch msgType {
-    case "execute_request":
-        return &ExecuteRequest{}
-    case "execute_reply":
-        return &ExecuteReply{}
-    case "heartbeat_request":
-        return &HeartbeatRequest{}
-    case "heartbeat_reply":
-        return &HeartbeatReply{}
-    default:
-        return nil
-    }
+    
+    // 添加服务节点
+    return m.Trace.AddHop(serviceId, serviceName, hostName)
 }
