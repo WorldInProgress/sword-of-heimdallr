@@ -1,5 +1,10 @@
 package protocol
 
+// 协议版本
+const (
+    ProtocolVersion = "0.4"
+)
+
 // 枚举类型定义
 type (
     Compression string

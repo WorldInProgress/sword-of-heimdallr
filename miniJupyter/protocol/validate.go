@@ -41,7 +41,7 @@ func validateHeader(h *Header) error {
     if !IsValidMessageType(h.MsgType) {
         return fmt.Errorf("invalid message type: %s", h.MsgType)
     }
-    if h.Version != "0.3" {
+    if h.Version != ProtocolVersion {
         return fmt.Errorf("unsupported version: %s", h.Version)
     }
     return nil

@@ -28,35 +28,35 @@ func NewProtocolError(code int, message string, details interface{}) *ProtocolEr
 
 // 预定义错误码
 const (
-    // 1000-1099: Protocol level errors
-    ErrCodeInvalidMessage     = 1000
-    ErrCodeInvalidMessageType = 1001
-    ErrCodeInvalidVersion     = 1002
-    ErrCodeInvalidFormat      = 1003
-    ErrCodeValidationFailed   = 1004
-    ErrCodeSerializeFailed    = 1005
-    ErrCodeDeserializeFailed  = 1006
+    // 1000-1099: Protocol level errors 协议级错误
+    ErrCodeInvalidMessage     = 1000  // 消息格式不符合协议规范
+    ErrCodeInvalidMessageType = 1001  // 消息类型不在预定义类型列表中
+    ErrCodeInvalidVersion     = 1002  // 协议版本不匹配或不支持
+    ErrCodeInvalidFormat      = 1003  // 消息结构不正确（如缺少必要字段）
+    ErrCodeValidationFailed   = 1004  // 消息内容验证失败（如字段值不合法）
+    ErrCodeSerializeFailed    = 1005  // 消息序列化失败（转JSON等）
+    ErrCodeDeserializeFailed  = 1006  // 消息反序列化失败（解析JSON等）
 
-    // 1100-1199: Authentication/Authorization errors
-    ErrCodeUnauthorized       = 1100
-    ErrCodeInvalidToken       = 1101
-    ErrCodeInsufficientPerms  = 1102
-    ErrCodeSessionExpired     = 1103
+    // 1100-1199: Authentication/Authorization errors 认证/授权错误
+    ErrCodeUnauthorized      = 1100  // 未经授权的访问
+    ErrCodeInvalidToken      = 1101  // 无效的认证令牌
+    ErrCodeInsufficientPerms = 1102  // 权限不足
+    ErrCodeSessionExpired    = 1103  // 会话已过期
 
-    // 1200-1299: Execution errors
-    ErrCodeExecutionFailed    = 1200
-    ErrCodeTimeout           = 1201
-    ErrCodeDependencyFailed  = 1202
-    ErrCodeServiceNotFound   = 1203
-    ErrCodeMethodNotFound    = 1204
-    ErrCodeInvalidParams     = 1205
+    // 1200-1299: Execution errors 执行错误
+    ErrCodeExecutionFailed    = 1200  // 执行失败
+    ErrCodeTimeout           = 1201  // 操作超时
+    ErrCodeDependencyFailed  = 1202  // 依赖执行失败
+    ErrCodeServiceNotFound   = 1203  // 服务未找到
+    ErrCodeMethodNotFound    = 1204  // 方法未找到
+    ErrCodeInvalidParams     = 1205  // 参数不合法
 
-    // 1300-1399: Communication errors
-    ErrCodeConnectionFailed  = 1300
-    ErrCodeHeartbeatTimeout  = 1301
-    ErrCodeSubscribeFailed   = 1302
-    ErrCodePublishFailed     = 1303
-    ErrCodeCommFailed        = 1304
+    // 1300-1399: Communication errors 通信错误
+    ErrCodeConnectionFailed  = 1300  // 连接失败
+    ErrCodeHeartbeatTimeout  = 1301  // 心跳超时
+    ErrCodeSubscribeFailed   = 1302  // 订阅失败
+    ErrCodePublishFailed     = 1303  // 发布失败
+    ErrCodeCommFailed        = 1304  // 通信操作失败
 )
 
 // 预定义错误实例

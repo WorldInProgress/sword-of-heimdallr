@@ -37,6 +37,8 @@ type SecurityConfig struct {
     Encryption string `json:"encryption"`
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+
 // Execute Request Content
 type ExecuteRequestContent struct {
     CommandId    string                 `json:"command_id"`
@@ -98,6 +100,8 @@ type CommMsgContent struct {
     CommId string      `json:"comm_id"`
     Data   interface{} `json:"data"`
 }
+
+///////////////////////////////////////////////////////////////////////////////////////
 
 // Message 的追踪相关方法
 func (m *Message) AddTrace(serviceId, serviceName, hostName string) *MessageHop {
