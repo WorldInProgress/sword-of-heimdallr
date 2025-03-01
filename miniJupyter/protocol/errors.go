@@ -44,7 +44,7 @@ const (
     ErrCodeSessionExpired    = 1103  // 会话已过期
 
     // 1200-1299: Execution errors 执行错误
-    ErrCodeExecutionFailed    = 1200  // 执行失败
+    ErrCodeExecutionFailed   = 1200  // 执行失败
     ErrCodeTimeout           = 1201  // 操作超时
     ErrCodeDependencyFailed  = 1202  // 依赖执行失败
     ErrCodeServiceNotFound   = 1203  // 服务未找到

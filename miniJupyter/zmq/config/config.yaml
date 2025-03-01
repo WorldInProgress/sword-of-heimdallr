@@ -1,0 +1,8 @@
+zmq:
+  RouterAddress: "tcp://127.0.0.1:5555"
+  DealerAddress: "tcp://127.0.0.1:5555"
+  PubAddress: "tcp://127.0.0.1:6666"
+  SubAddress: "tcp://127.0.0.1:6666"
+  HeartbeatInterval: 2
+  HeartbeatTimeout: 15
+
