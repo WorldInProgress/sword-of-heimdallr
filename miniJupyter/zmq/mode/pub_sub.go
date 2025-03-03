@@ -1,33 +1,52 @@
 package mode
 
 import (
-	"fmt"
-	"time"
-
-	"zmq/utils"
+	"zmq/base"
 
 	zmq "github.com/pebbe/zmq4"
 )
 
-// Publisher
-func RunPublisher(address string) {
-	pub := utils.CreateSocket(zmq.PUB, address, true)
-	defer pub.Close()
-
-	for i := 0; i < 10; i++ {
-		utils.SendMessage(pub, fmt.Sprintf("Topic1 Message %d", i))
-		time.Sleep(time.Second)
-	}
+type PublisherNode struct {
+	*base.ZmqNode
 }
 
-// Subscriber
-func RunSubscriber(address string) {
-	sub := utils.CreateSocket(zmq.SUB, address, false)
-	defer sub.Close()
-	sub.SetSubscribe("Topic1") // 订阅 "Topic1"
+type SubscriberNode struct {
+	*base.ZmqNode
+	topics []string
+}
 
-	for {
-		msg := utils.ReceiveMessage(sub)
-		fmt.Println("[Subscriber] Received:", msg)
+func NewPublisher(address string) (*PublisherNode, error) {
+	node, err := base.NewZmqNode(zmq.PUB, address, true)
+	if err != nil {
+		return nil, err
 	}
+	return &PublisherNode{node}, nil
+}
+
+func NewSubscriber(address string) (*SubscriberNode, error) {
+	node, err := base.NewZmqNode(zmq.SUB, address, false)
+	if err != nil {
+		return nil, err
+	}
+	return &SubscriberNode{node, make([]string, 0)}, nil
+}
+
+// PublishWithTopic 发布带主题的消息
+func (p *PublisherNode) PublishWithTopic(topic, message string) error {
+	return p.Send(topic, message)
+}
+
+// Subscribe 订阅特定主题
+func (s *SubscriberNode) Subscribe(topic string) error {
+	err := s.SetSubscribe(topic)
+	if err != nil {
+		return err
+	}
+	s.topics = append(s.topics, topic)
+	return nil
+}
+
+// GetTopics 获取当前订阅的所有主题
+func (s *SubscriberNode) GetTopics() []string {
+	return s.topics
 }

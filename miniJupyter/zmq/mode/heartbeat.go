@@ -3,39 +3,67 @@ package mode
 import (
 	"fmt"
 	"time"
-
-	"zmq/utils"
+	"zmq/base"
 
 	zmq "github.com/pebbe/zmq4"
 )
 
-// 心跳检测服务器
+// RunHeartbeatServer 心跳检测服务器
 func RunHeartbeatServer(address string) {
-	router := utils.CreateSocket(zmq.ROUTER, address, true)
-	defer router.Close()
+	publisher, err := base.NewZmqNode(zmq.PUB, address, true)
+	if err != nil {
+		panic(err)
+	}
+	defer publisher.Close()
 
 	for {
-		identity, _ := router.Recv(0)
-		msg := utils.ReceiveMessage(router)
-		if msg == "PING" {
-			fmt.Printf("[Heartbeat Server] Received PING from %s\n", identity)
-			router.Send(identity, zmq.SNDMORE)
-			utils.SendMessage(router, "PONG")
+		err = publisher.Send("heartbeat")
+		if err != nil {
+			fmt.Printf("Error publishing heartbeat: %v\n", err)
 		}
+		time.Sleep(time.Second) // 每秒发送一次心跳
 	}
 }
 
-// 心跳检测客户端
-func RunHeartbeatClient(address string, interval int) {
-	dealer := utils.CreateSocket(zmq.DEALER, address, false)
-	defer dealer.Close()
-
-	for {
-		utils.SendMessage(dealer, "PING")
-		reply := utils.ReceiveMessage(dealer)
-		if reply == "PONG" {
-			fmt.Println("[Heartbeat Client] Received PONG")
-		}
-		time.Sleep(time.Duration(interval) * time.Second)
+// RunHeartbeatClient 心跳检测客户端
+func RunHeartbeatClient(address string, timeout time.Duration) chan bool {
+	subscriber, err := base.NewZmqNode(zmq.SUB, address, false)
+	if err != nil {
+		panic(err)
 	}
+	defer subscriber.Close()
+
+	err = subscriber.SetSubscribe("heartbeat")
+	if err != nil {
+		panic(err)
+	}
+
+	// 创建用于通知断连状态的channel
+	disconnectedChan := make(chan bool)
+	
+	lastHeartbeat := time.Now()
+	go func() {
+		for {
+			_, err := subscriber.Receive()
+			if err != nil {
+				fmt.Printf("Error receiving heartbeat: %v\n", err)
+				continue
+			}
+			lastHeartbeat = time.Now()
+		}
+	}()
+
+	// 监控心跳超时
+	go func() {
+		for {
+			if time.Since(lastHeartbeat) > timeout {
+				fmt.Println("Heartbeat timeout detected")
+				disconnectedChan <- true  // 发送断连信号
+				// 这里可以添加断开连接或重连的逻辑
+			}
+			time.Sleep(timeout / 2)
+		}
+	}()
+
+	return disconnectedChan
 }

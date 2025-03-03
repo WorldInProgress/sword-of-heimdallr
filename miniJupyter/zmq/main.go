@@ -16,14 +16,14 @@ func main() {
     }
 
     // 启动各个组件
-    go mode.RunRouter(config.Zmq.RouterAddress)
+    // go mode.RunRouter(config.Zmq.RouterAddress)
     go mode.RunHeartbeatServer(config.Zmq.RouterAddress)
     
     // 等待一段时间让服务器启动
     time.Sleep(time.Second)
     
-    go mode.RunDealer(config.Zmq.DealerAddress)
-    go mode.RunHeartbeatClient(config.Zmq.DealerAddress, config.Zmq.HeartbeatInterval)
+    // go mode.RunDealer(config.Zmq.DealerAddress)
+    go mode.RunHeartbeatClient(config.Zmq.DealerAddress, time.Duration(config.Zmq.HeartbeatInterval) * time.Second)
 
     // 防止程序退出
     select {}

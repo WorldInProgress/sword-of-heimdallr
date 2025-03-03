@@ -3,7 +3,7 @@ package base
 import (
 	"os"
 
-	"github.com/pebbe/zmq4"
+	zmq "github.com/pebbe/zmq4"
 	"gopkg.in/yaml.v2"
 )
 
@@ -12,7 +12,10 @@ type Config struct {
     Zmq struct {
         RouterAddress     string `yaml:"router_address"`
         DealerAddress     string `yaml:"dealer_address"`
+        PubAddress        string `yaml:"pub_address"`
+        SubAddress        string `yaml:"sub_address"`
         HeartbeatInterval int    `yaml:"heartbeat_interval"`
+        HeartbeatTimeout  int    `yaml:"heartbeat_timeout"`
     } `yaml:"zmq"`
 }
 
@@ -32,12 +35,12 @@ func LoadConfig(filename string) (*Config, error) {
 
 // ZmqNode 结构体，封装 ZMQ 逻辑
 type ZmqNode struct {
-    socket *zmq4.Socket
+    socket *zmq.Socket
 }
 
 // 创建 ZMQ 端点
-func NewZmqNode(socketType zmq4.Type, address string, bind bool) (*ZmqNode, error) {
-    socket, err := zmq4.NewSocket(socketType)
+func NewZmqNode(socketType zmq.Type, address string, bind bool) (*ZmqNode, error) {
+    socket, err := zmq.NewSocket(socketType)
     if err != nil {
         return nil, err
     }
@@ -63,4 +66,9 @@ func (z *ZmqNode) Receive() ([]string, error) {
 // 关闭 ZMQ 连接
 func (z *ZmqNode) Close() {
     z.socket.Close()
+}
+
+// SetSubscribe 设置订阅主题
+func (z *ZmqNode) SetSubscribe(topic string) error {
+    return z.socket.SetSubscribe(topic)
 }
