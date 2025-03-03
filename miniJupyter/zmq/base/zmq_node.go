@@ -52,7 +52,7 @@ func NewZmqNode(socketType zmq.Type, address string, bind bool) (*ZmqNode, error
     return &ZmqNode{socket: socket}, nil
 }
 
-// 发送消息
+// 发送消息，可以发送字符串和字节数组
 func (z *ZmqNode) Send(msg ...string) error {
     _, err := z.socket.SendMessage(msg)
     return err
