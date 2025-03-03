@@ -30,26 +30,20 @@ type XSubscriberNode struct {
 // NewXPublisher 创建新的 XPUB 节点，增加权限控制
 func NewXPublisher(address string) (*XPublisherNode, error) {
 	node, err := base.NewZmqNode(zmq.XPUB, address, true)
-	if err != nil {
-		return nil, err
-	}
 	return &XPublisherNode{
 		ZmqNode:     node,
 		permissions: make(map[string][]string),
-	}, nil
+	}, err
 }
 
 // NewXSubscriber 创建新的 XSUB 节点，需要提供用户ID
 func NewXSubscriber(address string, userID string) (*XSubscriberNode, error) {
 	node, err := base.NewZmqNode(zmq.XSUB, address, false)
-	if err != nil {
-		return nil, err
-	}
 	return &XSubscriberNode{
 		ZmqNode: node,
 		topics:  make([]string, 0),
 		userID:  userID,
-	}, nil
+	}, err
 }
 
 // SetTopicPermission 设置主题的访问权限
